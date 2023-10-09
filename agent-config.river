@@ -3,90 +3,44 @@ logging {
   format = "json"
 }
 
-// Discovers kubernetes pods
-discovery.kubernetes "pods" {
-  role = "pod"
+// Discover docker containers
+discovery.docker "containers" {
+  host = DOCKER_ENGINE_HOST
 }
 
-// Relabel internal kubernetes log line labels, otherwise they are dropped
+// Relabel internal docker log line labels, otherwise they are dropped
 discovery.relabel "default" {
-  targets = discovery.kubernetes.pods.targets
+  targets = discovery.docker.containers.targets
 
-  // Beside the pod labels and annotations it also persist a lot of garbage
+  // Beside the container labels and annotations it also persist a lot of garbage
   rule {
     action = "labelmap"
-    regex = "__meta_kubernetes_pod_label_([^_]+)"
+    regex = "__meta_docker_container_label_([^_]+)"
   }
   rule {
     action = "replace"
-    source_labels = ["__meta_kubernetes_pod_node_name"]
-    target_label = "node_name"
-  }
-  rule {
-    action = "replace"
-    source_labels = ["__meta_kubernetes_namespace"]
-    target_label = "namespace"
-  }
-  rule {
-    action = "replace"
-    source_labels = ["__meta_kubernetes_pod_name"]
-    target_label = "pod"
-  }
-  rule {
-    action = "replace"
-    source_labels = ["__meta_kubernetes_pod_container_name"]
+    source_labels = ["__meta_docker_container_name"]
     target_label = "container"
   }
 }
 
-// Tails logs from Kubernetes pod targets and forwards it to loki.write and otelcol.receiver components
+// Tails logs from Kubernetes pod targets and forwards it to loki.write component
 // It cannot be used for other roles for logging: https://github.com/grafana/agent/issues/4098
 // As per the GitHub issue, this resource documentation is confusing
-loki.source.kubernetes "pods" {
+loki.source.docker "LABEL" {
+  host       = DOCKER_ENGINE_HOST
   targets    = discovery.relabel.default.output
   forward_to = [loki.process.default.receiver]
 }
 
 // NOTE: We are using discovery.relabel because it occurs before the logs are tailed
 // Meaning it infers less work on the grafana agent, because we are tailing/indexing on less labels
-// Also the loki.source.kubernetes resource already disregards the internal Kubernetes labels, which is undesired
-// Leaving this here for notice
 //loki.relabel "default" {}
 
-// receives json log entries (logfmt as fallback) and applies one or more processing stages
-// extracts and exports labels from the log line
+// receives json log entries and applies one or more processing stages
+// extracts and indexes labels from the log line
 loki.process "default" {
-  stage.multiline {
-    firstline = "^\\x{200B}"
-    max_wait_time = "3s"
-  }
-  stage.json {
-    expressions = {ts = "timestamp", level = "severity", msg = "message"} // An empty expression means using the same value as the key
-  }
-  stage.json {
-    expressions = {ts = "", level = "", msg = ""} // An empty expression means using the same value as the key
-  }
-  // Avoid using logfmt stage, because on malformed log lines which are common, it fails to parse it and drop the label!
-  // stage.logfmt {}
-  
-  stage.labels {
-    values = {
-      level = "level",
-    }
-  }
-  stage.match {
-    selector = "{app=\"event-exporter-gke\"}"
-    action   = "drop"
-  }
-  stage.label_drop {
-    values = [ "instance", "job" ]
-  }
-  stage.timestamp {
-    source = "time"
-    format = "RFC3339"
-  }
-  // NOTE: Log based metrics - instead we utilize the builtin functions in Grafana UI
-  // stage.metrics {}
+  stage.docker {}
 
   forward_to = [loki.write.default.receiver]
 }
@@ -94,6 +48,6 @@ loki.process "default" {
 // Write logs to loki
 loki.write "default" {
   endpoint {
-    url = "http://{{ .Values.loki_endpoint }}/loki/api/v1/push"
+    url = "http://loki:3100/loki/api/v1/push"
   }
 }
