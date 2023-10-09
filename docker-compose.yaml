@@ -3,24 +3,55 @@ version: "3.8"
 x-loki: &loki
   image: grafana/loki:v0.4.0
   volumes:
-    - ./config/loki.yaml:/config/loki.yaml
+    - ./loki-values.yaml:/config
   restart: always
-  entrypoint: sh
-  command: >
-    -c "
-      exec loki -config.file=/config/loki.yaml -target=$$LOKI_TARGET;"
+  entrypoint:
+    - /bin/loki
+    - -config.file=/config/loki-values.yaml 
+    - -target=$$LOKI_TARGET
   networks:
-    - loki
+    - grafana
 
 networks:
-  loki:
+  grafana:
 
 volumes:
   chunks:
   index:
-  promtail_positions:
 
 services:
+  grafana:
+    image: grafana/grafana:10.0.8
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - grafana
+
+  agent:
+    image: grafana/agent:main-9a53c48
+    volumes:
+      - ./agent-config.river:/etc/agent-config
+    restart: always
+    entrypoint:
+      - /bin/grafana-agent
+      #  Makes sure the debugging UI is available outside of the Docker container
+      - -server.http.address=0.0.0.0:12345
+      - -config.file=/etc/agent-config/agent-config.river
+    environment:
+      HOSTNAME: agent
+      AGENT_MODE: flow
+      #REMOTE_WRITE_HOST: mimir:9009
+      LOKI_HOST: loki:3100
+      #TEMPO_HOST: tempo:4317
+    ports:
+      - "12345:12345"
+    networks:
+      - grafana
+    depends_on:
+      - grafana
+      - loki
+    
   loki-distributor:
     <<: *loki
     environment:
@@ -35,10 +66,3 @@ services:
     <<: *loki
     environment:
       LOKI_TARGET: querier
-
-  grafana:
-    image: grafana/grafana:10.0.8-ubuntu
-    ports:
-      - "3000:3000"
-    networks:
-      - loki
