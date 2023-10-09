@@ -66,3 +66,28 @@ services:
     <<: *loki
     environment:
       LOKI_TARGET: querier
+
+  loki-compactor:
+    <<: *loki
+    environment:
+      LOKI_TARGET: compactor
+
+  loki-query-scheduler:
+    <<: *loki
+    environment:
+      LOKI_TARGET: query-scheduler
+
+  loki-ingester-querier:
+    <<: *loki
+    environment:
+      LOKI_TARGET: ingester-querier
+
+  loki-query-frontend:
+    <<: *loki
+    environment:
+      LOKI_TARGET: query-frontend
+
+  loki-ruler:
+    <<: *loki
+    environment:
+      LOKI_TARGET: ruler
