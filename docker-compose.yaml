@@ -1,0 +1,44 @@
+version: "3.8"
+
+x-loki: &loki
+  image: grafana/loki:v0.4.0
+  volumes:
+    - ./config/loki.yaml:/config/loki.yaml
+  restart: always
+  entrypoint: sh
+  command: >
+    -c "
+      exec loki -config.file=/config/loki.yaml -target=$$LOKI_TARGET;"
+  networks:
+    - loki
+
+networks:
+  loki:
+
+volumes:
+  chunks:
+  index:
+  promtail_positions:
+
+services:
+  loki-distributor:
+    <<: *loki
+    environment:
+      LOKI_TARGET: distributor
+
+  loki-ingester:
+    <<: *loki
+    environment:
+      LOKI_TARGET: ingester
+
+  loki-querier:
+    <<: *loki
+    environment:
+      LOKI_TARGET: querier
+
+  grafana:
+    image: grafana/grafana:10.0.8-ubuntu
+    ports:
+      - "3000:3000"
+    networks:
+      - loki
