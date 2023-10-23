@@ -29,20 +29,22 @@ services:
       - grafana
 
   agent:
-    image: grafana/agent:main-9a53c48
+    image: grafana/agent:latest
     volumes:
-      - ./agent-config.river:/etc/agent-config
+      - ./agent/config.river:/etc/agent-config
     restart: always
     entrypoint:
-      - /bin/grafana-agent
+      - /bin/grafana-agent 
+      - run 
       #  Makes sure the debugging UI is available outside of the Docker container
-      - -server.http.address=0.0.0.0:12345
-      - -config.file=/etc/agent-config/agent-config.river
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/agent-config
     environment:
       HOSTNAME: agent
       AGENT_MODE: flow
+      DOCKER_ENGINE_HOST: unix:///Users/teodor.podobnik/.docker/run/docker.sock
       #REMOTE_WRITE_HOST: mimir:9009
-      LOKI_HOST: loki:3100
+      #LOKI_HOST: loki:3100
       #TEMPO_HOST: tempo:4317
     ports:
       - "12345:12345"
@@ -50,51 +52,3 @@ services:
       - grafana
     depends_on:
       - grafana
-      - loki-distributor
-      - loki-ingester
-      - loki-querier
-      - loki-ruler
-      - loki-compactor
-      - loki-query-scheduler
-      - loki-query-frontend
-      - loki-ingester-querier
-    
-  loki-distributor:
-    <<: *loki
-    environment:
-      LOKI_TARGET: distributor
-
-  loki-ingester:
-    <<: *loki
-    environment:
-      LOKI_TARGET: ingester
-
-  loki-querier:
-    <<: *loki
-    environment:
-      LOKI_TARGET: querier
-
-  loki-compactor:
-    <<: *loki
-    environment:
-      LOKI_TARGET: compactor
-
-  loki-query-scheduler:
-    <<: *loki
-    environment:
-      LOKI_TARGET: query-scheduler
-
-  loki-ingester-querier:
-    <<: *loki
-    environment:
-      LOKI_TARGET: ingester-querier
-
-  loki-query-frontend:
-    <<: *loki
-    environment:
-      LOKI_TARGET: query-frontend
-
-  loki-ruler:
-    <<: *loki
-    environment:
-      LOKI_TARGET: ruler

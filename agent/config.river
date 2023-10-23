@@ -5,7 +5,7 @@ logging {
 
 // Discover docker containers
 discovery.docker "containers" {
-  host = DOCKER_ENGINE_HOST
+  host = "unix:///Users/teodor.podobnik/.docker/run/docker.sock" 
 }
 
 // Relabel internal docker log line labels, otherwise they are dropped
@@ -28,7 +28,7 @@ discovery.relabel "default" {
 // It cannot be used for other roles for logging: https://github.com/grafana/agent/issues/4098
 // As per the GitHub issue, this resource documentation is confusing
 loki.source.docker "LABEL" {
-  host       = DOCKER_ENGINE_HOST
+  host       = "unix:///Users/teodor.podobnik/.docker/run/docker.sock"
   targets    = discovery.relabel.default.output
   forward_to = [loki.process.default.receiver]
 }
