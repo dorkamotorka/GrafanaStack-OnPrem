@@ -10,7 +10,11 @@ volumes:
 services:
   grafana:
     image: grafana/grafana:10.0.8
+    container_name: grafana
     restart: always
+#    volumes:
+#      - ./grafana-values.ini:/config/grafana-values.ini
+#    command: -config=/config/grafana-values.ini
     ports:
       - "3000:3000"
     networks:
@@ -18,10 +22,10 @@ services:
 
   loki:
     image: grafana/loki:2.9.0
+    container_name: loki
     ports:
       - "3100:3100"
-      - "8500:8500"
-      - "7946:7946"
+      - "9095:9095"
     volumes:
       - ./loki-values.yaml:/config/loki-values.yaml
       - /tmp/loki/data:/data
@@ -40,10 +44,10 @@ services:
 
   agent:
     image: grafana/agent:latest
+    container_name: agent
     volumes:
       - ./agent/config.river:/etc/agent-config
       - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
     entrypoint:
       - /bin/grafana-agent 
       - run 
@@ -51,12 +55,7 @@ services:
       - --server.http.listen-addr=0.0.0.0:12345
       - /etc/agent-config
     environment:
-      HOSTNAME: agent
       AGENT_MODE: flow
-      DOCKER_ENGINE_HOST: unix:///Users/teodor.podobnik/.docker/run/docker.sock
-      #REMOTE_WRITE_HOST: mimir:9009
-      #LOKI_HOST: loki:3100
-      #TEMPO_HOST: tempo:4317
     ports:
       - "12345:12345"
     networks:

@@ -5,12 +5,19 @@ server:
   grpc_listen_port: 9095
   http_server_read_timeout: 600s
   http_server_write_timeout: 600s
+  log_level: info
 
 common:
   ring:
     kvstore:
       store: memberlist
+  replication_factor: 1
 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: memberlist
 
 compactor:
   # Directory where files can be downloaded for compaction.
