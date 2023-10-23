@@ -1,4 +1,4 @@
-auth_enabled: true
+auth_enabled: false
 
 server:
   http_listen_port: 3100
@@ -6,23 +6,17 @@ server:
   http_server_read_timeout: 600s
   http_server_write_timeout: 600s
 
-ruler:
-  storage:
-    type: local
-    local:
-      directory: /etc/loki/rules
+common:
   ring:
     kvstore:
       store: memberlist
-  enable_alertmanager_v2: true
-  enable_api: true
-  alertmanager_url: http://{{ .Values.mimir_endpoint }}/alertmanager
+
 
 compactor:
   # Directory where files can be downloaded for compaction.
   working_directory: /data/retention
   # The shared store used for storing boltdb files.
-  shared_store: gcs
+  shared_store: filesystem
   compaction_interval: 10m
   retention_enabled: true
   # This specifies a delay after which chunks that meet the retention criteria (which should be 90d) will be fully deleted.
@@ -37,7 +31,7 @@ schema_config:
       # Either tsdb or boltdb-shipper.
       store: boltdb-shipper
       # Which store from the storage_config to use for the chunks
-      object_store: gcs
+      object_store: filesystem
       schema: v12
       index:
         prefix: loki_index_
@@ -48,12 +42,9 @@ storage_config:
   boltdb_shipper:
     active_index_directory: /data/index
     cache_location: /data/boltdb-cache
-    shared_store: gcs
-  gcs:
-    bucket_name: tolmac-loki
-    chunk_buffer_size: 0
-    request_timeout: "3s"
-    enable_http2: true
+    shared_store: filesystem
+  filesystem:
+    directory: /tmp/loki/
 
 # delete old logs after 90 days
 limits_config:

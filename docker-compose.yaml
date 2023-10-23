@@ -1,17 +1,5 @@
 version: "3.8"
 
-x-loki: &loki
-  image: grafana/loki:v0.4.0
-  volumes:
-    - ./loki-values.yaml:/config
-  restart: always
-  entrypoint:
-    - /bin/loki
-    - -config.file=/config/loki-values.yaml 
-    - -target=$$LOKI_TARGET
-  networks:
-    - grafana
-
 networks:
   grafana:
 
@@ -28,10 +16,33 @@ services:
     networks:
       - grafana
 
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+      - "8500:8500"
+      - "7946:7946"
+    volumes:
+      - ./loki-values.yaml:/config/loki-values.yaml
+      - /tmp/loki/data:/data
+      - /tmp/loki/wal:/wal
+    command: -config.file=/config/loki-values.yaml
+    networks:
+      - grafana
+
+#  mimir:
+#    image: grafana/mimir:2.10.0
+#    volumes:
+#      - ./mimir-values.yaml:/config/mimir-values.yaml
+#    command: -config.file=/config/mimir-values.yaml
+#    networks:
+#      - grafana
+
   agent:
     image: grafana/agent:latest
     volumes:
       - ./agent/config.river:/etc/agent-config
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: always
     entrypoint:
       - /bin/grafana-agent 
@@ -52,3 +63,5 @@ services:
       - grafana
     depends_on:
       - grafana
+      - loki
+#      - mimir
