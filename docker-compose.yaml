@@ -50,7 +50,14 @@ services:
       - grafana
     depends_on:
       - grafana
-      - loki
+      - loki-distributor
+      - loki-ingester
+      - loki-querier
+      - loki-ruler
+      - loki-compactor
+      - loki-query-scheduler
+      - loki-query-frontend
+      - loki-ingester-querier
     
   loki-distributor:
     <<: *loki
