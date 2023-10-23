@@ -20,6 +20,13 @@ services:
     networks:
       - grafana
 
+  log-generator:
+    image: chentex/random-logger:latest
+    container_name: log-generator
+    restart: always
+    networks:
+      - grafana
+
   loki:
     image: grafana/loki:2.9.0
     container_name: loki

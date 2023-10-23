@@ -27,7 +27,7 @@ discovery.relabel "default" {
 // Tails logs from Kubernetes pod targets and forwards it to loki.write component
 // It cannot be used for other roles for logging: https://github.com/grafana/agent/issues/4098
 // As per the GitHub issue, this resource documentation is confusing
-loki.source.docker "LABEL" {
+loki.source.docker "containers" {
   host       = "unix:///var/run/docker.sock" 
   targets    = discovery.relabel.default.output
   forward_to = [loki.process.default.receiver]
