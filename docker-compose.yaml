@@ -21,7 +21,7 @@ services:
       - grafana
 
   log-generator:
-    image: chentex/random-logger:latest
+    image: sikwan/random-json-logger:latest
     container_name: log-generator
     restart: always
     networks:

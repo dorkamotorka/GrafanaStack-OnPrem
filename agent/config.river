@@ -41,7 +41,14 @@ loki.source.docker "containers" {
 // extracts and indexes labels from the log line
 loki.process "default" {
   stage.docker {}
-
+  stage.json {
+    expressions = {ts = "timestamp", level = "", msg = "message"}
+  }
+  stage.labels {
+    values = {
+      level = "level",
+    }
+  }
   forward_to = [loki.write.default.receiver]
 }
 
