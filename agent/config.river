@@ -1,5 +1,5 @@
 logging {
-  level = "error"
+  level = "info"
   format = "json"
 }
 
@@ -42,7 +42,7 @@ loki.source.docker "containers" {
 loki.process "default" {
   stage.docker {}
   stage.json {
-    expressions = {ts = "timestamp", level = "", msg = "message"}
+    expressions = {level = "", msg = "message"}
   }
   stage.labels {
     values = {
@@ -55,6 +55,10 @@ loki.process "default" {
 // Write logs to loki
 loki.write "default" {
   endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
+    url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
+    #basic_auth {
+    #  username = "739020"
+    #  password = "<secret>"
+    #}
   }
 }

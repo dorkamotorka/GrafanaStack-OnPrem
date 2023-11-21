@@ -3,51 +3,13 @@ version: "3.8"
 networks:
   grafana:
 
-volumes:
-  chunks:
-  index:
-
 services:
-  grafana:
-    image: grafana/grafana:10.0.8
-    container_name: grafana
-    restart: always
-#    volumes:
-#      - ./grafana-values.ini:/config/grafana-values.ini
-#    command: -config=/config/grafana-values.ini
-    ports:
-      - "3000:3000"
-    networks:
-      - grafana
-
   log-generator:
     image: sikwan/random-json-logger:latest
     container_name: log-generator
     restart: always
     networks:
       - grafana
-
-  loki:
-    image: grafana/loki:2.9.0
-    container_name: loki
-    ports:
-      - "3100:3100"
-      - "9095:9095"
-    volumes:
-      - ./loki-values.yaml:/config/loki-values.yaml
-      - /tmp/loki/data:/data
-      - /tmp/loki/wal:/wal
-    command: -config.file=/config/loki-values.yaml
-    networks:
-      - grafana
-
-#  mimir:
-#    image: grafana/mimir:2.10.0
-#    volumes:
-#      - ./mimir-values.yaml:/config/mimir-values.yaml
-#    command: -config.file=/config/mimir-values.yaml
-#    networks:
-#      - grafana
 
   agent:
     image: grafana/agent:latest
@@ -67,7 +29,3 @@ services:
       - "12345:12345"
     networks:
       - grafana
-    depends_on:
-      - grafana
-      - loki
-#      - mimir
