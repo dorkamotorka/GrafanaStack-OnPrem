@@ -12,7 +12,7 @@ services:
       - grafana
 
   agent:
-    image: grafana/agent:v0.37.4
+    image: grafana/agent:v0.38.1
     container_name: agent
     volumes:
       - ./agent/config.river:/etc/agent-config
