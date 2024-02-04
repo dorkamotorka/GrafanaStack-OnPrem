@@ -30,7 +30,7 @@ discovery.relabel "default" {
 loki.source.docker "containers" {
   host       = "unix:///var/run/docker.sock" 
   targets    = discovery.relabel.default.output
-  forward_to = [loki.process.default.receiver]
+  forward_to = [loki.write.default.receiver]
 }
 
 // NOTE: We are using discovery.relabel because it occurs before the logs are tailed
@@ -39,26 +39,48 @@ loki.source.docker "containers" {
 
 // receives json log entries and applies one or more processing stages
 // extracts and indexes labels from the log line
-loki.process "default" {
-  stage.docker {}
-  stage.json {
-    expressions = {level = "", msg = "message"}
-  }
-  stage.labels {
-    values = {
-      level = "level",
-    }
-  }
-  forward_to = [loki.write.default.receiver]
-}
+//loki.process "default" {
+//  stage.docker {}
+//  stage.json {
+//    expressions = {level = "", msg = "message"}
+//  }
+//  stage.labels {
+//    values = {
+//      level = "level",
+//    }
+//  }
+//  forward_to = [loki.write.default.receiver]
+//}
 
 // Write logs to loki
 loki.write "default" {
   endpoint {
     url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
-    #basic_auth {
-    #  username = "739020"
-    #  password = "<secret>"
-    #}
+    basic_auth {
+      username = "739020"
+      password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
+    }
+  }
+}
+
+prometheus.exporter.cadvisor "default" {
+   docker_host = "unix:///var/run/docker.sock"
+   docker_only = true
+}
+
+// Configure a prometheus.scrape component to collect cadvisor metrics.
+prometheus.scrape "scraper" {
+  targets    = prometheus.exporter.cadvisor.default.targets
+  forward_to = [ prometheus.remote_write.default.receiver ]
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = "https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push" 
+
+    basic_auth {
+      username = "1279949"
+      password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
+    }
   }
 }
