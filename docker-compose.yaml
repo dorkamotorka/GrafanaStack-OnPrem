@@ -4,18 +4,33 @@ networks:
   grafana:
 
 services:
+  log-generator:
+    image: sikwan/random-json-logger:latest
+    container_name: log-generator
+    restart: always
+    networks:
+      - grafana
+
   agent:
     image: grafana/agent:v0.37.4
     container_name: agent
     volumes:
       - ./agent/gf-docker-integration.river:/etc/agent-config
       - /var/run/docker.sock:/var/run/docker.sock
+      - "/:/rootfs"
+      - "/var/run:/var/run"
+      - "/sys:/sys"
+      - "/var/lib/docker/:/var/lib/docker"
+      - "/dev/disk/:/dev/disk"
     entrypoint:
       - /bin/grafana-agent 
       - run 
       #  Makes sure the debugging UI is available outside of the Docker container
       - --server.http.listen-addr=0.0.0.0:12345
       - /etc/agent-config
+    privileged: true
+    devices:
+      - "/dev/kmsg"
     environment:
       AGENT_MODE: flow
     ports:

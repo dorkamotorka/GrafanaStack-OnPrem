@@ -4,7 +4,7 @@ discovery.docker "logs_integrations_integrations_docker" {
 }
 
 discovery.relabel "logs_integrations_integrations_docker" {
-	targets = []
+	targets = discovery.docker.logs_integrations_integrations_docker.targets
 
 	rule {
 		target_label = "job"
@@ -30,9 +30,8 @@ discovery.relabel "logs_integrations_integrations_docker" {
 
 loki.source.docker "logs_integrations_integrations_docker" {
 	host             = "unix:///var/run/docker.sock"
-	targets          = discovery.docker.logs_integrations_integrations_docker.targets
+	targets          = discovery.relabel.logs_integrations_integrations_docker.output
 	forward_to       = [loki.write.logs_integrations.receiver]
-	relabel_rules    = discovery.relabel.logs_integrations_integrations_docker.rules
 }
 
 loki.write "logs_integrations" {
@@ -45,6 +44,11 @@ loki.write "logs_integrations" {
 		}
 	}
 	external_labels = {}
+}
+
+prometheus.exporter.agent "integrations_agent" { }
+prometheus.exporter.cadvisor "integrations_cadvisor" {
+	docker_only = true
 }
 
 prometheus.scrape "integrations_cadvisor" {
@@ -69,8 +73,6 @@ prometheus.relabel "integrations_agent" {
 	}
 }
 
-prometheus.exporter.agent "integrations_agent" { }
-
 discovery.relabel "integrations_agent" {
 	targets = prometheus.exporter.agent.integrations_agent.targets
 
@@ -83,10 +85,6 @@ discovery.relabel "integrations_agent" {
 		target_label = "job"
 		replacement  = "integrations/agent-check"
 	}
-}
-
-prometheus.exporter.cadvisor "integrations_cadvisor" {
-	docker_only = true
 }
 
 discovery.relabel "integrations_cadvisor" {
