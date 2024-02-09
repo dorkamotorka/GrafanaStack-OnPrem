@@ -11,6 +11,15 @@ services:
     networks:
       - grafana
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    volumes:
+      - ./uptime-kuma-data:/app/data
+    ports:
+      - 3001:3001  # <Host Port>:<Container Port>
+    restart: always
+
   agent:
     image: grafana/agent:v0.37.4
     container_name: agent
