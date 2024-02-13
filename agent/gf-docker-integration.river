@@ -2,7 +2,6 @@ discovery.docker "integrations_docker" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"
 }
-
 discovery.relabel "integrations_docker" {
 	targets = discovery.docker.integrations_docker.targets
 
@@ -25,6 +24,32 @@ discovery.relabel "integrations_docker" {
 	rule {
 		source_labels = ["__meta_docker_container_log_stream"]
 		target_label  = "stream"
+	}
+}
+discovery.relabel "integrations_agent" {
+	targets = prometheus.exporter.agent.integrations_agent.targets
+
+	rule {
+		source_labels = ["agent_hostname"]
+		target_label  = "instance"
+	}
+
+	rule {
+		target_label = "job"
+		replacement  = "integrations/agent-check"
+	}
+}
+discovery.relabel "integrations_cadvisor" {
+	targets = prometheus.exporter.cadvisor.integrations_cadvisor.targets
+
+	rule {
+		target_label = "job"
+		replacement  = "integrations/docker"
+	}
+
+	rule {
+		target_label = "instance"
+		replacement  = "localhost"
 	}
 }
 
@@ -50,19 +75,23 @@ prometheus.exporter.agent "integrations_agent" { }
 prometheus.exporter.cadvisor "integrations_cadvisor" {
 	docker_only = true
 }
+prometheus.exporter.unix "node" { }
 
 // Configure a prometheus.scrape component to collect container metrics.
 prometheus.scrape "container_metrics" {
-  targets    = discovery.docker.integrations_docker.targets
+  targets    = discovery.relabel.integrations_agent.output
   forward_to = [prometheus.remote_write.integrations.receiver]
 }
-
 prometheus.scrape "integrations_cadvisor" {
 	targets    = discovery.relabel.integrations_cadvisor.output
 	forward_to = [prometheus.remote_write.integrations.receiver]
 	job_name   = "integrations/cadvisor"
 }
-
+// Configure a prometheus.scrape component to collect unix metrics.
+prometheus.scrape "node" {
+  targets    = prometheus.exporter.unix.node.targets
+  forward_to = [prometheus.remote_write.integrations.receiver]
+}
 prometheus.scrape "integrations_agent" {
 	targets    = discovery.relabel.integrations_agent.output
 	forward_to = [prometheus.relabel.integrations_agent.receiver]
@@ -79,34 +108,6 @@ prometheus.relabel "integrations_agent" {
 	}
 }
 
-discovery.relabel "integrations_agent" {
-	targets = prometheus.exporter.agent.integrations_agent.targets
-
-	rule {
-		source_labels = ["agent_hostname"]
-		target_label  = "instance"
-	}
-
-	rule {
-		target_label = "job"
-		replacement  = "integrations/agent-check"
-	}
-}
-
-discovery.relabel "integrations_cadvisor" {
-	targets = prometheus.exporter.cadvisor.integrations_cadvisor.targets
-
-	rule {
-		target_label = "job"
-		replacement  = "integrations/docker"
-	}
-
-	rule {
-		target_label = "instance"
-		replacement  = "localhost"
-	}
-}
-
 prometheus.remote_write "metrics_integrations" {
 	endpoint {
 		name = "integrations-2c1175"
@@ -116,13 +117,10 @@ prometheus.remote_write "metrics_integrations" {
 			username = "1279949"
 			password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
 		}
-
 		queue_config { }
-
 		metadata_config { }
 	}
 }
-
 prometheus.remote_write "integrations" {
 	endpoint {
 		url = "https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push"
@@ -131,9 +129,7 @@ prometheus.remote_write "integrations" {
 			username = "1279949"
 			password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
 		}
-
 		queue_config { }
-
 		metadata_config { }
 	}
 }

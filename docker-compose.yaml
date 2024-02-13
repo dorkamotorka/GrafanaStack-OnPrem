@@ -4,12 +4,12 @@ networks:
   grafana:
 
 services:
-  log-generator:
-    image: sikwan/random-json-logger:latest
-    container_name: log-generator
-    restart: always
-    networks:
-      - grafana
+  #log-generator:
+  #  image: sikwan/random-json-logger:latest
+  #  container_name: log-generator
+  #  restart: always
+  #  networks:
+  #    - grafana
 
   uptime-kuma:
     image: louislam/uptime-kuma:1
