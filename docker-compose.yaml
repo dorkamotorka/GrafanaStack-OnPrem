@@ -4,24 +4,24 @@ networks:
   grafana:
 
 services:
-  #log-generator:
-  #  image: sikwan/random-json-logger:latest
-  #  container_name: log-generator
-  #  restart: always
-  #  networks:
-  #    - grafana
-
-  uptime-kuma:
-    image: louislam/uptime-kuma:1
-    container_name: uptime-kuma
-    volumes:
-      - ./uptime-kuma-data:/app/data
-    ports:
-      - 3001:3001  # <Host Port>:<Container Port>
+  log-generator:
+    image: sikwan/random-json-logger:latest
+    container_name: log-generator
     restart: always
+    networks:
+      - grafana
+
+  #uptime-kuma:
+  #  image: louislam/uptime-kuma:1
+  #  container_name: uptime-kuma
+  #  volumes:
+  #    - ./uptime-kuma-data:/app/data
+  #  ports:
+  #    - 3001:3001  # <Host Port>:<Container Port>
+  #  restart: always
 
   agent:
-    image: grafana/agent:v0.37.4
+    image: grafana/agent:v0.40.3
     container_name: agent
     volumes:
       - ./agent/gf-docker-integration.river:/etc/agent-config

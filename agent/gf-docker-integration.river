@@ -1,3 +1,7 @@
+logging {
+  level  = "info"
+  format = "json"
+}
 discovery.docker "integrations_docker" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"
@@ -21,13 +25,20 @@ discovery.relabel "integrations_docker" {
 		target_label  = "container"
 	}
 
+	// Don't output agent logs to Grafana
+	//rule {
+	//	action = "drop"
+	//	source_labels = ["container"]
+	//	regex         = "agent"
+	//}
+
 	rule {
 		source_labels = ["__meta_docker_container_log_stream"]
 		target_label  = "stream"
 	}
 }
 discovery.relabel "integrations_agent" {
-	targets = prometheus.exporter.agent.integrations_agent.targets
+	targets = prometheus.exporter.self.integrations_agent.targets
 
 	rule {
 		source_labels = ["agent_hostname"]
@@ -56,7 +67,16 @@ discovery.relabel "integrations_cadvisor" {
 loki.source.docker "integrations_docker" {
 	host             = "unix:///var/run/docker.sock"
 	targets          = discovery.relabel.integrations_docker.output
-	forward_to       = [loki.write.logs_integrations.receiver]
+	forward_to       = [loki.process.logs_integrations.receiver]
+}
+
+loki.process "logs_integrations" {
+  forward_to = [loki.write.logs_integrations.receiver]
+
+  stage.multiline {
+    firstline = "^\\x{200B}"
+    max_wait_time = "3s"
+  }
 }
 
 loki.write "logs_integrations" {
@@ -71,7 +91,7 @@ loki.write "logs_integrations" {
 	external_labels = {}
 }
 
-prometheus.exporter.agent "integrations_agent" { }
+prometheus.exporter.self "integrations_agent" { }
 prometheus.exporter.cadvisor "integrations_cadvisor" {
 	docker_only = true
 }
