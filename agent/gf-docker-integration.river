@@ -132,6 +132,10 @@ prometheus.scrape "dcgm_scraper" {
     targets = [{"__address__" = "10.20.98.35:9400"}]
     forward_to = [prometheus.remote_write.metrics_integrations.receiver]
 }
+prometheus.scrape "nvidia_smi_scraper" {
+    targets = [{"__address__" = "10.20.98.35:9835"}]
+    forward_to = [prometheus.remote_write.metrics_integrations.receiver]
+}
 
 prometheus.remote_write "metrics_integrations" {
 	endpoint {
