@@ -16,7 +16,7 @@ discovery.relabel "integrations_docker" {
 
 	rule {
 		target_label = "instance"
-		replacement  = "localhost"
+		replacement  = "dev"
 	}
 
 	rule {
@@ -60,7 +60,7 @@ discovery.relabel "integrations_cadvisor" {
 
 	rule {
 		target_label = "instance"
-		replacement  = "localhost"
+		replacement  = "dev"
 	}
 }
 
@@ -81,11 +81,11 @@ loki.process "logs_integrations" {
 
 loki.write "logs_integrations" {
 	endpoint {
-		url = "https://logs-prod-012.grafana.net/loki/api/v1/push"
+		url = "https://logs-prod-006.grafana.net/loki/api/v1/push"
 
 		basic_auth {
-			username = "739020"
-			password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
+			username = "840186"
+			password = "glc_eyJvIjoiMTA3Nzg0NCIsIm4iOiJzdGFjay04ODI0MDUtaW50ZWdyYXRpb24tZGV2LXRva2VuIiwiayI6IjVvZHRMNGM1NXI1OTM2NEZnS3hta05iNiIsIm0iOnsiciI6InByb2QtdXMtZWFzdC0wIn19"
 		}
 	}
 	external_labels = {}
@@ -130,12 +130,11 @@ prometheus.relabel "integrations_agent" {
 
 prometheus.remote_write "metrics_integrations" {
 	endpoint {
-		name = "integrations-2c1175"
-		url  = "https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push"
+		url  = "https://prometheus-prod-13-prod-us-east-0.grafana.net/api/prom/push"
 
 		basic_auth {
-			username = "1279949"
-			password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
+			username = "1477753"
+			password = "glc_eyJvIjoiMTA3Nzg0NCIsIm4iOiJzdGFjay04ODI0MDUtaW50ZWdyYXRpb24tZGV2LXRva2VuIiwiayI6IjVvZHRMNGM1NXI1OTM2NEZnS3hta05iNiIsIm0iOnsiciI6InByb2QtdXMtZWFzdC0wIn19"
 		}
 		queue_config { }
 		metadata_config { }
@@ -143,11 +142,11 @@ prometheus.remote_write "metrics_integrations" {
 }
 prometheus.remote_write "integrations" {
 	endpoint {
-		url = "https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push"
+		url = "https://prometheus-prod-13-prod-us-east-0.grafana.net/api/prom/push"
 
 		basic_auth {
-			username = "1279949"
-			password = "glc_eyJvIjoiOTg2NTcxIiwibiI6InN0YWNrLTc4NjAyNC1pbnRlZ3JhdGlvbi1ncmFmYW5hLWFnZW50LWFjY2Vzcy10b2tlbiIsImsiOiI2OHFDZDFnUDYxdEZVM1VFMWczYno3RDkiLCJtIjp7InIiOiJwcm9kLWV1LXdlc3QtMiJ9fQ=="
+			username = "1477753"
+			password = "glc_eyJvIjoiMTA3Nzg0NCIsIm4iOiJzdGFjay04ODI0MDUtaW50ZWdyYXRpb24tZGV2LXRva2VuIiwiayI6IjVvZHRMNGM1NXI1OTM2NEZnS3hta05iNiIsIm0iOnsiciI6InByb2QtdXMtZWFzdC0wIn19"
 		}
 		queue_config { }
 		metadata_config { }
