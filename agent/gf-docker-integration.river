@@ -128,6 +128,11 @@ prometheus.relabel "integrations_agent" {
 	}
 }
 
+prometheus.scrape "dcgm_scraper" {
+    targets = [{"__address__" = "10.20.98.35:9400"}]
+    forward_to = [prometheus.remote_write.metrics_integrations.receiver]
+}
+
 prometheus.remote_write "metrics_integrations" {
 	endpoint {
 		url  = "https://prometheus-prod-13-prod-us-east-0.grafana.net/api/prom/push"
